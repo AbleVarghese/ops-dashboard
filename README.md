@@ -9,6 +9,22 @@ v3's headline change from v2: there is no longer a single "active" project you s
 every enabled project is watched at once, with a unified project-tagged feed, per-project lanes, a
 plain-English narrative strip summarizing all of them, and live stall detection.
 
+---
+
+## Repository index
+
+Two related private repos (owner `AbleVarghese`):
+
+| Repo | Purpose | Local path |
+|---|---|---|
+| **[ops-dashboard](https://github.com/AbleVarghese/ops-dashboard)** | This project — a live SDLC / agent-activity monitor for Claude Code repos | `/Users/Able/ops-dashboard` |
+| **[claude-config](https://github.com/AbleVarghese/claude-config)** | Global Claude Code config — rules, hooks, commands, skills, settings (secret-free, default-deny) | `/Users/Able/.claude` |
+
+Relocated 2026-07-24 from `~/.claude/lib/ops-dashboard` to its own standalone project so the config
+backup stays pure config.
+
+---
+
 ## Install
 
 Nothing to install — it's a self-contained folder. Just have Node ≥22.
@@ -20,7 +36,7 @@ node --version   # must be >=22
 ## Run
 
 ```bash
-cd ~/.claude/lib/ops-dashboard
+cd /Users/Able/ops-dashboard
 node server.mjs [repoPath]      # optional: adds + enables this repo on first boot if not already configured
 ```
 
@@ -33,10 +49,72 @@ First run creates `config.json` (all settings including the project list, editab
 tab or by hand) and `data/<projectKey>/control.json` (the per-project control ledger) next to
 `server.mjs`. A v2 `config.json` (single `projectRepoMap`) is migrated automatically on first v3 boot.
 
+## Integrating with a project — local & remote
+
+The dashboard is **project-agnostic and read-only against the project**: point it at any repo, no code
+edits, no per-project install. It never writes into a watched repo — all control state lives under this
+package's own `data/`.
+
+### What it reads FROM a project (the integration surface)
+
+| Source in the project | Feeds which tab | Required? |
+|---|---|---|
+| `.git` (branch, remotes, ahead/behind, tags, commit cadence) | Git, Overview | recommended |
+| `~/.claude/projects/<hyphenated-abs-path>/*` transcripts | Agents, Live Feed | auto (Claude Code writes these) |
+| `reports/*.md` ledgers | Live Feed | optional |
+| `STATUS.md` (phase board) | Kanban | optional |
+| `tasks.json` | Kanban | optional |
+| `TEST-RUNS.md` | Tests & Quality | optional |
+
+A project with none of the optional files still renders cleanly — those tabs just stay empty until the
+files exist. **To enrich the dashboard for a project, have it maintain `reports/*.md`, `STATUS.md`,
+`TEST-RUNS.md`, and/or `tasks.json`** (nothing else needed).
+
+### A) Local integration (same machine as the projects)
+
+Run natively, pointed at one project (adds + enables it on first boot); add more live from **Settings**:
+
+```bash
+cd /Users/Able/ops-dashboard
+node server.mjs /Users/Able/keralora     # watch keralora
+# open http://127.0.0.1:4650  → Settings tab to add solvemax-app, LawyerServed, … (all live, no restart)
+```
+
+Or containerized (mounts `$HOME` read-only at the same absolute path so transcript-dir names resolve):
+
+```bash
+REPO_PATH=/Users/Able/keralora docker compose up --build   # http://127.0.0.1:4650
+```
+
+Local mode is bound to `127.0.0.1` — not reachable from other machines. Auth (`dashToken`) is optional here.
+
+### B) Remote integration (hub + collectors, across machines)
+
+For watching agents running on **other** machines, run a **hub** on a server and a **collector** on each
+agent machine. The hub never touches any agent machine's filesystem — collectors push over authenticated
+`POST /ingest`.
+
+```bash
+# On the hub server:
+openssl rand -hex 32                       # generate DASH_TOKEN once
+echo "DASH_TOKEN=<paste>" > .env
+touch config.json                          # first run only
+docker compose -f docker-compose.hub.yml up -d --build    # binds 0.0.0.0:4650
+
+# On each machine that runs agents:
+node collector.mjs --hub https://your-hub:4650 --token <paste> --project /path/to/project
+```
+
+- **Auth**: every route requires `Authorization: Bearer <DASH_TOKEN>` (or `?token=` for the SSE stream).
+  Set a separate `COLLECTOR_TOKEN` so a leaked collector config can't be replayed against the dashboard's
+  read/control routes.
+- **TLS**: `DASH_TOKEN` is bearer-auth over plain HTTP — put a reverse proxy / TLS terminator in front of
+  the hub for anything leaving your LAN.
+
 ## Uninstall
 
 ```bash
-rm -rf ~/.claude/lib/ops-dashboard
+rm -rf /Users/Able/ops-dashboard
 ```
 
 Nothing else on the machine references this folder — it's not a system service, it doesn't touch
@@ -191,7 +269,7 @@ compatible with a single-token v3.1-style setup) — `/ingest` falls back to `DA
 **2. Run a collector** (on every Mac/machine that has agents — a one-liner):
 
 ```bash
-node ~/.claude/lib/ops-dashboard/collector.mjs \
+node /Users/Able/ops-dashboard/collector.mjs \
   --hub https://your-server.example.com:4650 \
   --token <the COLLECTOR_TOKEN, or DASH_TOKEN if you didn't set one> \
   --project keralora:/Users/Able/keralora \
@@ -215,7 +293,7 @@ locally — nothing about what it detects differs from local mode, only where th
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>/Users/Able/.claude/lib/ops-dashboard/collector.mjs</string>
+    <string>/Users/Able/ops-dashboard/collector.mjs</string>
     <string>--hub</string><string>https://your-server.example.com:4650</string>
     <string>--token</string><string>YOUR_COLLECTOR_TOKEN</string>
     <string>--project</string><string>keralora:/Users/Able/keralora</string>

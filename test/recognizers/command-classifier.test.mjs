@@ -11,7 +11,7 @@ test("classifyCommand: test — REAL captured command", () => {
 });
 
 test("classifyCommand: test — REAL captured command (this dashboard's own npm test)", () => {
-  assert.equal(classifyCommand("cd ~/.claude/lib/ops-dashboard && node --check lib/agent-status-v31.mjs && npm test 2>&1 | tail -8"), "test");
+  assert.equal(classifyCommand("cd /Users/Able/ops-dashboard && node --check lib/agent-status-v31.mjs && npm test 2>&1 | tail -8"), "test");
 });
 
 test("classifyCommand: build — REAL captured command", () => {
