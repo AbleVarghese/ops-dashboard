@@ -1,0 +1,296 @@
+{
+  "targetUrl": "http://127.0.0.1:4650",
+  "ranAt": "2026-07-24T13:30:06.212Z",
+  "shots": [
+    {
+      "tab": "overview",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/overview-1440-dark.png",
+      "hScroll": false,
+      "overflowPx": 16,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "lanes",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/lanes-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "feed",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/feed-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "agents",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/agents-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "kanban",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/kanban-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "tests",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/tests-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "git",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/git-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "control",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/control-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "settings",
+      "viewport": "1440",
+      "theme": "dark",
+      "file": "screenshots/settings-1440-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "overview",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/overview-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "lanes",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/lanes-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "feed",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/feed-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "agents",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/agents-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "kanban",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/kanban-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "tests",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/tests-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "git",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/git-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "control",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/control-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "settings",
+      "viewport": "390",
+      "theme": "dark",
+      "file": "screenshots/settings-390-dark.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "overview",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/overview-1440-light.png",
+      "hScroll": false,
+      "overflowPx": 16,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "lanes",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/lanes-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "feed",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/feed-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "agents",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/agents-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "kanban",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/kanban-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "tests",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/tests-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "git",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/git-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "control",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/control-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "settings",
+      "viewport": "1440",
+      "theme": "light",
+      "file": "screenshots/settings-1440-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "overview",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/overview-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "lanes",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/lanes-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "feed",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/feed-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "agents",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/agents-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "kanban",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/kanban-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "tests",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/tests-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "git",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/git-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "control",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/control-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    },
+    {
+      "tab": "settings",
+      "viewport": "390",
+      "theme": "light",
+      "file": "screenshots/settings-390-light.png",
+      "hScroll": false,
+      "consoleErrorsSoFar": 0
+    }
+  ]
+}

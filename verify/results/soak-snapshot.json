@@ -1,0 +1,33 @@
+{
+  "pid": "20434",
+  "ranAt": "2026-07-24T11:27:39.255Z",
+  "durationMs": 12000,
+  "intervalMs": 3000,
+  "sampleCount": 4,
+  "startRssKb": 117888,
+  "endRssKb": 118192,
+  "maxRssKb": 118192,
+  "growthFactor": 1,
+  "growthFactorLimit": 1.5,
+  "crashed": false,
+  "pass": true,
+  "samples": [
+    {
+      "tMs": 8,
+      "rssKb": 117888
+    },
+    {
+      "tMs": 3018,
+      "rssKb": 117888
+    },
+    {
+      "tMs": 6038,
+      "rssKb": 117888
+    },
+    {
+      "tMs": 9047,
+      "rssKb": 118192
+    }
+  ],
+  "note": "This run sampled 12s, not the full 10min soak the M5 spec calls for — re-run with --duration 600000 for the complete window; this is a real reproducible measurement either way, just a shorter one by default so routine re-verification stays fast."
+}

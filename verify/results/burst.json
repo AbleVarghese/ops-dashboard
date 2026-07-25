@@ -1,0 +1,34 @@
+{
+  "targetUrl": "http://127.0.0.1:4650",
+  "ranAt": "2026-07-24T12:13:03.975Z",
+  "requested": 500,
+  "phaseA": {
+    "claim": "same-file rapid writes (report table rows) — coalescing of SSE FRAMES is expected; payload loss is not",
+    "requested": 500,
+    "liveCapturedDistinctFrameMarkers": 500,
+    "writeWallMs": 43,
+    "frameCount": 495,
+    "frameTimeMs": {
+      "mean": 2,
+      "max": 664
+    },
+    "retainedOnDisk": 500,
+    "displayLayerCap": 10,
+    "displayLayerShowsLatestRow": true,
+    "pass": true
+  },
+  "phaseB": {
+    "claim": "distinct-source events (one synthetic transcript LINE = one logically-distinct feed event)",
+    "requested": 500,
+    "liveCapturedDistinctEvents": 500,
+    "writeWallMs": 2,
+    "frameCount": 503,
+    "frameTimeMs": {
+      "mean": 1,
+      "max": 272
+    },
+    "elidedCount": 0,
+    "elidedExplanation": null,
+    "pass": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "targetUrl": "http://127.0.0.1:4650",
+  "ranAt": "2026-07-24T13:31:38.978Z",
+  "cases": [
+    {
+      "name": "malformed PATCH /api/settings (port: string not int)",
+      "expectation": "server rejects with 4xx, stays alive",
+      "actualStatus": 400,
+      "serverAliveAfter": true,
+      "pass": true
+    },
+    {
+      "name": "watched project directory deleted from disk mid-session",
+      "expectation": "/api/state keeps responding 200 (project may still be LISTED with degraded/empty data — that's fine; a 500 or hang is not)",
+      "addedOk": true,
+      "apiStateStatusAfter": 200,
+      "apiStateMsAfter": 772,
+      "stillListedAfterVanish": true,
+      "serverAliveAfter": true,
+      "pass": true
+    },
+    {
+      "name": "watched report file rotated (truncated + rewritten) while the offset-tracker held a byte offset into it",
+      "expectation": "server survives, and re-arms to read the NEW file content (post-rotate row visible) — not stuck re-reading a stale offset",
+      "addedOk": true,
+      "apiStateStatusAfter": 200,
+      "postRotateRowVisible": true,
+      "serverAliveAfter": true,
+      "pass": true,
+      "note": "re-armed and read the new content correctly"
+    },
+    {
+      "name": "brand-new project with no reports/ and no .git at all",
+      "expectation": "adds cleanly, /api/state stays 200",
+      "addedOk": true,
+      "apiStateStatusAfter": 200,
+      "pass": true
+    }
+  ]
+}

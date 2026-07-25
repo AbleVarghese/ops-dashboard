@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops Dashboard</title>
+<meta name="description" content="Live, project-agnostic SDLC and agent-activity monitor — multi-project.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230F0D0B'/%3E%3Crect x='8' y='10' width='16' height='2.4' fill='%233E6B4F'/%3E%3Crect x='8' y='15' width='16' height='2.4' fill='%23C9C0B2'/%3E%3Crect x='8' y='20' width='10' height='2.4' fill='%23C9C0B2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <h1 id="brandTitle">OPS DASHBOARD</h1>
+    <span class="project-count" id="projectCount">0 projects</span>
+  </div>
+  <div class="scope-picker">
+    <label for="globalScope" class="scope-label">Scope</label>
+    <select id="globalScope" aria-label="Filter every tab to one project, or view all projects at once">
+      <option value="">All projects</option>
+    </select>
+    <span class="scope-chip" id="scopeChip" hidden></span>
+  </div>
+  <div class="conn">
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme">◐</button>
+    <span><span id="connDot" class="dot"></span><span id="connText">connecting…</span></span>
+    <span id="clock" class="num"></span>
+  </div>
+</header>
+
+<div id="reconnectBanner" class="reconnect-banner"></div>
+
+<div class="narrative-strip" id="narrativeStrip" aria-live="polite">
+  <span class="narrative-icon">●</span>
+  <span id="narrativeText">Loading live state…</span>
+</div>
+
+<nav class="tabs">
+  <button data-tab="overview" class="active">① Overview</button>
+  <button data-tab="lanes">② Projects <span class="tab-badge" id="lanesTabBadge">0</span></button>
+  <button data-tab="feed">③ Live Feed <span class="tab-badge" id="feedTabBadge">0</span></button>
+  <button data-tab="agents">④ Agents</button>
+  <button data-tab="kanban">⑤ Kanban</button>
+  <button data-tab="tests">⑥ Tests &amp; Quality</button>
+  <button data-tab="git">⑦ Git</button>
+  <button data-tab="control">⑧ Control</button>
+  <button data-tab="settings">⑨ Settings</button>
+</nav>
+
+<main>
+  <div id="warningBanner"></div>
+
+  <!-- ① Overview -->
+  <div class="tab-panel active" id="panel-overview">
+    <div class="triptych" id="triptych" aria-label="Done, doing, and pending work across every watched project"></div>
+    <div class="kpi-band" id="kpiBand"></div>
+    <div class="grid2">
+      <section class="card">
+        <h2>Activity — last 30 min <button class="info-dot" type="button" data-info="Every tool call, commit, and ledger update across ALL watched projects, bucketed into 1-minute counts. A flat line for a long stretch during active work can itself be a stall signal.">?</button></h2>
+        <p class="sub">Feed events per minute, every watched project combined.</p>
+        <div id="activityChart" class="chart-wrap"></div>
+      </section>
+      <section class="card">
+        <h2>Recent activity <button class="info-dot" type="button" data-info="The 5 most recent events across every project. Full history — filterable by project — lives in the Live Feed tab.">?</button></h2>
+        <p class="sub">Latest 5 — full history in the Live Feed tab.</p>
+        <div id="feedListMini"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ② Projects (lanes) -->
+  <div class="tab-panel" id="panel-lanes">
+    <section class="card">
+      <h2>Project Lanes <button class="info-dot" type="button" data-info="One lane per watched project: how many agents are working, what the top one is doing right now, and when its last git milestone landed. This is the fastest way to see everything at once.">?</button></h2>
+      <p class="sub">Every enabled project, watched simultaneously. Manage the list in Settings.</p>
+      <div id="lanesBoard" class="lanes-board"></div>
+    </section>
+  </div>
+
+  <!-- ③ Live Feed -->
+  <div class="tab-panel" id="panel-feed">
+    <section class="card">
+      <div class="feed-head">
+        <div>
+          <h2>Live Action Feed <button class="info-dot" type="button" data-info="Every tool call, commit, tag, and report-ledger row from every watched project, pushed the instant it hits disk — not polled. Newest on top.">?</button></h2>
+          <p class="sub" style="margin-bottom:0;">
+            Pushed the instant it hits disk (&lt;1s, not polled). Newest on top.
+            <span id="feedPausedTag" class="feed-paused-tag">paused (hovering)</span>
+          </p>
+        </div>
+        <select id="feedProjectFilter" aria-label="Filter feed by project"><option value="">All projects</option></select>
+      </div>
+      <div id="feedKindFilter" class="kind-filter-row" role="group" aria-label="Filter feed by event kind"></div>
+      <div id="feedList" tabindex="0" aria-label="Live event feed, scrollable"></div>
+    </section>
+  </div>
+
+  <!-- ④ Agents -->
+  <div class="tab-panel" id="panel-agents">
+    <section class="card">
+      <h2>Agents <button class="glossary-term" type="button" data-term="agent">agent<sup>?</sup></button> — live fleet, all projects <button class="info-dot" type="button" data-info="Ground truth parsed straight from each agent's own transcript file, plus control-ledger and spawn-metadata cross-checks — 8 states, each with an Evidence column showing exactly why. Sorted worst-first: possibly-stuck/stopped agents lead, then presumed-dead, then active work, then paused, with finished agents collapsed below.">?</button></h2>
+      <p class="sub">Working/Composing/Waiting = active right now. Done = finished on its own words (a real sign-off, not a guess). Stopped = a session-ending error, in its own words. Paused = a confirmed control request. Possibly stuck = quiet 5+ min with NO sign-off — an inference, not a claim. Presumed dead = quiet 24h+, same inference, further along. Every row's Evidence column shows the "why."</p>
+      <div id="agentsTable"></div>
+    </section>
+    <section class="card">
+      <h2>Requested vs Actual <button class="info-dot" type="button" data-info="From ROUTING-LOG.md if the selected project keeps one — which model/effort was requested for a task vs which one actually ran, per the project's model-routing rule.">?</button></h2>
+      <select id="routingProjectFilter" aria-label="Select project for routing table" class="panel-project-select"></select>
+      <div id="routingLogTable"></div>
+    </section>
+  </div>
+
+  <!-- ⑤ Kanban -->
+  <div class="tab-panel" id="panel-kanban">
+    <section class="card">
+      <div class="feed-head">
+        <h2>SDLC Board <button class="glossary-term" type="button" data-term="kanban">kanban<sup>?</sup></button></h2>
+        <select id="kanbanProjectFilter" aria-label="Select project for Kanban board"></select>
+      </div>
+      <p class="sub">Cards derived from the phase board + live agent liveness (a card whose owning agent is active shows in Verifying; a stalled owner flags the card red) + <code>tasks.json</code> when a project provides one.</p>
+      <div class="kanban-board" id="kanbanBoard"></div>
+    </section>
+  </div>
+
+  <!-- ⑥ Tests & Quality -->
+  <div class="tab-panel" id="panel-tests">
+    <section class="card">
+      <div class="feed-head">
+        <h2>Latest run</h2>
+        <select id="testsProjectFilter" aria-label="Select project for test results"></select>
+      </div>
+      <div id="testHero"></div>
+    </section>
+    <section class="card">
+      <h2>Result trend <button class="info-dot" type="button" data-info="Every logged run for this project, oldest on the left. A solid dot = pass or fail; a hollow ring = a caveated/unverified result (something ran but couldn't be fully confirmed).">?</button></h2>
+      <p class="sub">Most recent runs, left = oldest.</p>
+      <div id="testTrend"></div>
+    </section>
+    <section class="card">
+      <h2>Test Runs</h2>
+      <div id="testRunsTable"></div>
+    </section>
+  </div>
+
+  <!-- ⑦ Git Timeline -->
+  <div class="tab-panel" id="panel-git">
+    <section class="card">
+      <div class="feed-head">
+        <h2>Git</h2>
+        <select id="gitProjectFilter" aria-label="Select project for git status"></select>
+      </div>
+      <p class="sub" id="gitRollup">—</p>
+    </section>
+    <div class="grid2">
+      <section class="card">
+        <h2>Branch &amp; remotes</h2>
+        <p class="sub">Branch: <span id="gitBranch" class="mono"></span> &middot; Stash: <span id="gitStash" class="mono"></span></p>
+        <div id="gitAheadBehind"></div>
+      </section>
+      <section class="card">
+        <h2>Working tree</h2>
+        <p class="sub" id="gitDirtySummary"></p>
+        <div id="gitCadence"></div>
+      </section>
+    </div>
+    <section class="card">
+      <h2>Work-disposition matrix</h2>
+      <p class="sub">Rows = local branches / worktrees. Columns = committed &rarr; pushed &rarr; merged. Click a cell for detail.</p>
+      <div id="gitMatrix"></div>
+    </section>
+    <section class="card">
+      <h2>Tags timeline</h2>
+      <div id="gitTags"></div>
+    </section>
+  </div>
+
+  <!-- ⑧ Control -->
+  <div class="tab-panel" id="panel-control">
+    <section class="card">
+      <h2>Watchdog / Control <button class="info-dot" type="button" data-info="This panel cannot reach into a running orchestrator session directly — no such channel exists. Submitting an action appends a request; an orchestrator that watches its own project's control ledger picks it up on its next cycle.">?</button></h2>
+      <p class="sub">
+        Requests target ONE project's control ledger. Its orchestrator's watchdog reads and honors requests on its own cycle.
+      </p>
+      <div class="control-section">
+        <h3 class="control-section-head">Pending <span class="section-badge" id="controlPendingBadge">0</span></h3>
+        <div id="controlPending"></div>
+      </div>
+      <div class="control-section">
+        <h3 class="control-section-head">Honored history</h3>
+        <div id="controlHonored"></div>
+      </div>
+      <div id="controlActivityStrip"></div>
+      <form class="control-form" id="controlForm">
+        <div class="field"><label for="controlProject">Project</label><select id="controlProject"></select></div>
+        <div class="field">
+          <label for="action">Action</label>
+          <select id="action" name="action">
+            <option value="ping">ping</option>
+            <option value="stand_down">stand_down</option>
+            <option value="respawn">respawn</option>
+            <option value="pause_campaign">pause_campaign</option>
+            <option value="resume_campaign">resume_campaign</option>
+          </select>
+        </div>
+        <div class="field"><label for="agent">Agent (optional)</label><input type="text" id="agent" placeholder="e.g. build-rbac2"></div>
+        <div class="field" style="flex:1;"><label for="note">Note (optional)</label><input type="text" id="note" placeholder="context for the orchestrator"></div>
+        <button type="submit" class="primary">Submit request</button>
+      </form>
+      <p id="controlMsg"></p>
+    </section>
+  </div>
+
+  <!-- ⑨ Settings -->
+  <div class="tab-panel" id="panel-settings">
+    <section class="card">
+      <h2>Projects <button class="info-dot" type="button" data-info="Every project watched by this dashboard. Add, rename, enable/disable, or remove — changes apply live, no restart. Suggestions are auto-discovered from recently-active Claude Code sessions.">?</button></h2>
+      <p class="sub">Add, rename, enable/disable, or remove — all live, no restart.</p>
+      <div id="projectsManage"></div>
+      <form class="control-form" id="addProjectForm">
+        <div class="field" style="flex:1;"><label for="newProjectPath">Repo path</label><input type="text" id="newProjectPath" placeholder="/Users/you/some-repo" required></div>
+        <div class="field"><label for="newProjectName">Name (optional)</label><input type="text" id="newProjectName" placeholder="auto from path"></div>
+        <button type="submit" class="primary">Add project</button>
+      </form>
+      <p id="addProjectMsg"></p>
+      <h3 class="settings-subhead">Suggested (auto-discovered)</h3>
+      <div id="projectSuggestions"></div>
+    </section>
+    <section class="card" id="collectorsCard" hidden>
+      <h2>Collector Sources <button class="info-dot" type="button" data-info="v3.2 remote-hub mode: separate collector.mjs processes running on other machines, streaming what they see here. Online first, offline sources still show their last-known data (never hidden, just flagged).">?</button></h2>
+      <p class="sub">Only appears once at least one collector has registered — a pure-local deployment shows nothing here.</p>
+      <div id="collectorsList"></div>
+    </section>
+    <section class="card">
+      <h2>Settings</h2>
+      <p class="sub">Every knob here persists to <code>config.json</code>. Most apply live; port/bind/token need a restart <span class="restart-chip" id="restartChip">restart required</span>.</p>
+      <form id="settingsForm" class="settings-grid"></form>
+      <button type="button" class="primary" id="settingsSave">Save settings</button>
+      <p id="settingsMsg"></p>
+    </section>
+  </div>
+</main>
+
+<footer class="app-footer" id="appFooter">
+  <span id="footerWatchMode" class="footer-item mono"></span>
+  <span id="footerCollectorStatus" class="footer-item mono" hidden></span>
+</footer>
+
+<div id="drawerOverlay"></div>
+<aside id="drawer">
+  <button id="drawerClose">close ✕</button>
+  <div id="drawerContent"></div>
+</aside>
+
+<div id="infoPopover" class="info-popover" role="tooltip"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "ops-dashboard",
+  "version": "3.0.0-final",
+  "private": true,
+  "description": "Project-agnostic live SDLC/agent-activity dashboard — routing, live action feed, Kanban, tests, git timeline. Node built-ins only, zero dependencies, no build step.",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs test/recognizers/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED"
+}

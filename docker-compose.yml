@@ -1,0 +1,51 @@
+# Ops Dashboard v3 — containerized run. v3 watches MULTIPLE projects at once (config.projects[],
+# live-editable from Settings) — v2's single ${REPO_PATH}-only mount would defeat that inside
+# Docker (a newly-added project under a path that was never bind-mounted just wouldn't be visible
+# to the container). So v3 mounts the whole of $HOME read-only instead of one repo: since Claude
+# Code project dirs and the repos they track are, in practice, essentially always under $HOME, one
+# broad mount covers "any project you point the dashboard at" without per-project remounts —
+# matching the M6 portability gate ("points at ANY repo with no code edits").
+#
+# WHY ${HOME} specifically (not /workspace, /home/app, etc.): Claude Code names each project's
+# transcript directory under ~/.claude/projects/ by hyphenating the repo's OWN ABSOLUTE HOST PATH
+# (e.g. /Users/Able/keralora -> -Users-Able-keralora). The dashboard re-derives that same name from
+# whatever repoPath it's given (see lib/paths.mjs). If the container saw a repo at a different path
+# than the host does, the derived name would never match a real transcript directory — so $HOME is
+# bind-mounted at the SAME absolute path inside the container as on the host, and HOME is passed
+# through so os.homedir() (which CLAUDE_PROJECTS_ROOT is built from) resolves identically in both.
+#
+# Usage:
+#   REPO_PATH=/Users/Able/keralora docker compose up --build   # seeds the first project on boot
+#   (add more any time from the Settings tab — no restart, no new mount needed, they're all under $HOME)
+#
+# First run only: `touch config.json` in this directory before `up`, so Docker bind-mounts a FILE
+# (not an empty directory, which is what happens if the path doesn't exist yet).
+
+services:
+  ops-dashboard:
+    build: .
+    image: ops-dashboard:3.0.0-final
+    container_name: ops-dashboard
+    restart: unless-stopped
+    ports:
+      # Host-only publish — 127.0.0.1 means the port is not reachable from outside this machine,
+      # matching the non-Docker default. BIND=0.0.0.0 below is the container-INTERNAL bind (Docker
+      # still needs the process listening on all interfaces inside its own network namespace for
+      # the host-side 127.0.0.1 publish to forward correctly).
+      - "127.0.0.1:4650:4650"
+    environment:
+      HOME: ${HOME}
+      BIND: "0.0.0.0"
+      # Optional: set DASH_TOKEN=<random-string> to require `Authorization: Bearer <token>` (or
+      # ?token=<token> for the SSE connection) on every route. Unset = no auth (fine for a
+      # 127.0.0.1-only publish on a single-user machine; set it if you ever widen the bind).
+      DASH_TOKEN: ${DASH_TOKEN:-}
+    volumes:
+      # Read-only: the dashboard only ever reads transcripts, reports, and git state — one broad
+      # mount covers ~/.claude/projects AND every repo you might point it at (see header comment).
+      - ${HOME}:${HOME}:ro
+      # Read-write: this package's own runtime state (control ledgers, per-project data, the
+      # live-editable project list persisted in config.json).
+      - ./data:/app/data:rw
+      - ./config.json:/app/config.json:rw
+    command: ["node", "server.mjs", "${REPO_PATH:-${HOME}/keralora}"]

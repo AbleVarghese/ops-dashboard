@@ -1,0 +1,44 @@
+{
+  "targetUrl": "http://127.0.0.1:4654",
+  "ranAt": "2026-07-24T15:24:18.015Z",
+  "trials": 4,
+  "samples": {
+    "apiStateMs": [
+      532,
+      548,
+      592,
+      502
+    ],
+    "reportWriteMs": [
+      312,
+      741,
+      209,
+      303
+    ],
+    "gitCommitMs": [
+      455,
+      297,
+      267,
+      262
+    ]
+  },
+  "summary": {
+    "apiStateMeanMs": 544,
+    "reportWriteMeanMs": 391,
+    "gitCommitMeanMs": 320
+  },
+  "gate": {
+    "reportWrite": {
+      "thresholdMs": 1000,
+      "pass": true
+    },
+    "gitCommit": {
+      "thresholdMs": 1000,
+      "pass": true
+    },
+    "apiStateCold": {
+      "thresholdMs": 2000,
+      "pass": true
+    }
+  }
+}

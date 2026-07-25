@@ -1,0 +1,48 @@
+# Ops Dashboard v3.2 — HUB mode. Run this on the remote server (a different machine than any of
+# the ones actually running agents). Unlike docker-compose.yml (LOCAL mode: bind-mounts $HOME to
+# watch this machine's own projects), the hub never touches any agent machine's filesystem — it
+# only accepts authenticated POST /ingest traffic from collector.mjs processes running natively
+# on those machines (see README.md's "Remote hub + collector deployment" section for the full
+# recipe, including the collector one-liner and a launchd example for keeping it running on a Mac).
+#
+# DASH_TOKEN is NOT optional here (unlike the local compose file's commented "fine for
+# 127.0.0.1-only" note) — a hub is, by definition, reachable from other machines, so an unset token
+# would mean an open, unauthenticated /ingest endpoint AND an open dashboard. Generate one with
+# `openssl rand -hex 32` and put it in a `.env` file next to this compose file (or export it) before
+# `docker compose -f docker-compose.hub.yml up -d`.
+#
+# Usage:
+#   openssl rand -hex 32                          # generate DASH_TOKEN once
+#   echo "DASH_TOKEN=<paste>" > .env
+#   touch config.json                              # first run only — see docker-compose.yml's own note on why
+#   docker compose -f docker-compose.hub.yml up -d --build
+#   # then, on each machine that has agents: node collector.mjs --hub https://this-server:4650 --token <paste> --project ...
+
+services:
+  ops-dashboard-hub:
+    build: .
+    image: ops-dashboard:3.2.0-hub
+    container_name: ops-dashboard-hub
+    restart: unless-stopped
+    ports:
+      # A hub is meant to be reached from other machines — publish on all interfaces, not just
+      # 127.0.0.1 (unlike the local-mode compose file). Put a real reverse proxy / TLS terminator
+      # in front of this in any deployment that leaves your own LAN; DASH_TOKEN alone is bearer-auth
+      # over plain HTTP unless you terminate TLS somewhere.
+      - "4650:4650"
+    environment:
+      BIND: "0.0.0.0"
+      DASH_TOKEN: ${DASH_TOKEN:?DASH_TOKEN is required for hub mode — generate one with `openssl rand -hex 32`}
+      # Recommended, separate from DASH_TOKEN: when set, it's the ONLY credential POST /ingest
+      # accepts, so a leaked collector config (e.g. a stolen laptop) can't be replayed against the
+      # dashboard's own read/control routes. Leave unset to fall back to sharing DASH_TOKEN.
+      COLLECTOR_TOKEN: ${COLLECTOR_TOKEN:-}
+    volumes:
+      # A hub still needs read-write state (control ledgers per remote project, config.json's
+      # live-editable settings) — but crucially NO read-only $HOME mount: the hub has no local
+      # projects of its own to watch, everything it shows comes from collector.mjs's POST /ingest.
+      - ./data:/app/data:rw
+      - ./config.json:/app/config.json:rw
+    # No CMD repoPath arg (see Dockerfile's default entrypoint) — a hub-mode container watches
+    # zero local projects; config.projects stays empty and every project it shows arrives via /ingest.
+    command: ["node", "server.mjs"]
