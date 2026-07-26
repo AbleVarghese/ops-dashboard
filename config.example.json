@@ -2,6 +2,7 @@
   "port": 4650,
   "bind": "127.0.0.1",
   "dashToken": "",
+  "collectorToken": null,
   "projects": [
     {
       "key": "-Users-Able-keralora",
@@ -21,21 +22,21 @@
       "key": "-Users-Able-solvemax-app",
       "name": "solvemax-app",
       "repoPath": "/Users/Able/solvemax-app",
-      "enabled": false,
+      "enabled": true,
       "addedAt": "2026-07-24T12:59:29.499Z"
     },
     {
       "key": "-Users-Able-LawyerServed",
       "name": "LawyerServed",
       "repoPath": "/Users/Able/LawyerServed",
-      "enabled": false,
+      "enabled": true,
       "addedAt": "2026-07-24T12:59:44.752Z"
     },
     {
       "key": "-Users-Able-Licentric",
       "name": "Licentric",
       "repoPath": "/Users/Able/Licentric",
-      "enabled": false,
+      "enabled": true,
       "addedAt": "2026-07-24T13:00:32.716Z"
     }
   ],
@@ -84,6 +85,8 @@
       "failTextDark": "#cf6557",
       "verifyingTextDark": "#5189b4",
       "verifyingTextLight": "#3c698b",
+      "pendingTextLight": "#7a5f28",
+      "buildingTextLight": "#7a5f28",
       "stoppedTextDark": "#b39187",
       "orphanedTextDark": "#c96a5a"
     },
