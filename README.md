@@ -38,7 +38,7 @@ node --version   # must be >=22
 ## Run
 
 ```bash
-cd /Users/Able/ops-dashboard
+cd ~/ops-dashboard
 node server.mjs [repoPath]      # optional: adds + enables this repo on first boot if not already configured
 ```
 
@@ -77,15 +77,15 @@ files exist. **To enrich the dashboard for a project, have it maintain `reports/
 Run natively, pointed at one project (adds + enables it on first boot); add more live from **Settings**:
 
 ```bash
-cd /Users/Able/ops-dashboard
-node server.mjs /Users/Able/keralora     # watch keralora
+cd ~/ops-dashboard
+node server.mjs ~/keralora     # watch keralora
 # open http://127.0.0.1:4650  → Settings tab to add solvemax-app, LawyerServed, … (all live, no restart)
 ```
 
 Or containerized (mounts `$HOME` read-only at the same absolute path so transcript-dir names resolve):
 
 ```bash
-REPO_PATH=/Users/Able/keralora docker compose up --build   # http://127.0.0.1:4650
+REPO_PATH=~/keralora docker compose up --build   # http://127.0.0.1:4650
 ```
 
 Local mode is bound to `127.0.0.1` — not reachable from other machines. Auth (`dashToken`) is optional here.
@@ -116,7 +116,7 @@ node collector.mjs --hub https://your-hub:4650 --token <paste> --project /path/t
 ## Uninstall
 
 ```bash
-rm -rf /Users/Able/ops-dashboard
+rm -rf ~/ops-dashboard
 ```
 
 Nothing else on the machine references this folder — it's not a system service, it doesn't touch
@@ -218,7 +218,7 @@ native `collector.mjs` process on each machine that actually has agents.
 
 ```bash
 touch config.json                                # first run only — see docker-compose.yml comment
-REPO_PATH=/Users/Able/keralora docker compose up --build
+REPO_PATH=~/keralora docker compose up --build
 ```
 
 v3 mounts the whole of `$HOME` read-only (not a single `$REPO_PATH`) — since every project you'd
@@ -271,11 +271,11 @@ compatible with a single-token v3.1-style setup) — `/ingest` falls back to `DA
 **2. Run a collector** (on every Mac/machine that has agents — a one-liner):
 
 ```bash
-node /Users/Able/ops-dashboard/collector.mjs \
+node ~/ops-dashboard/collector.mjs \
   --hub https://your-server.example.com:4650 \
   --token <the COLLECTOR_TOKEN, or DASH_TOKEN if you didn't set one> \
-  --project keralora:/Users/Able/keralora \
-  --project dotclaude:/Users/Able/.claude
+  --project keralora:~/keralora \
+  --project dotclaude:~/.claude
 ```
 
 Add as many `--project name:repoPath` flags as you have repos to watch, or use `--config
@@ -295,10 +295,10 @@ locally — nothing about what it detects differs from local mode, only where th
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>/Users/Able/ops-dashboard/collector.mjs</string>
+    <string>~/ops-dashboard/collector.mjs</string>
     <string>--hub</string><string>https://your-server.example.com:4650</string>
     <string>--token</string><string>YOUR_COLLECTOR_TOKEN</string>
-    <string>--project</string><string>keralora:/Users/Able/keralora</string>
+    <string>--project</string><string>keralora:~/keralora</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>

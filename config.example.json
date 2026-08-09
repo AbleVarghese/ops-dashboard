@@ -7,42 +7,42 @@
     {
       "key": "-Users-Able-keralora",
       "name": "keralora",
-      "repoPath": "/Users/Able/keralora",
+      "repoPath": "~/keralora",
       "enabled": true,
       "addedAt": "2026-07-24T10:33:50.120Z"
     },
     {
       "key": "-Users-Able-.claude",
       "name": ".claude",
-      "repoPath": "/Users/Able/.claude",
+      "repoPath": "~/.claude",
       "enabled": false,
       "addedAt": "2026-07-24T10:33:50.123Z"
     },
     {
       "key": "-Users-Able-solvemax-app",
       "name": "solvemax-app",
-      "repoPath": "/Users/Able/solvemax-app",
+      "repoPath": "~/solvemax-app",
       "enabled": true,
       "addedAt": "2026-07-24T12:59:29.499Z"
     },
     {
       "key": "-Users-Able-LawyerServed",
       "name": "LawyerServed",
-      "repoPath": "/Users/Able/LawyerServed",
+      "repoPath": "~/LawyerServed",
       "enabled": true,
       "addedAt": "2026-07-24T12:59:44.752Z"
     },
     {
       "key": "-Users-Able-Licentric",
       "name": "Licentric",
-      "repoPath": "/Users/Able/Licentric",
+      "repoPath": "~/Licentric",
       "enabled": true,
       "addedAt": "2026-07-24T13:00:32.716Z"
     }
   ],
   "projectRepoMap": {
-    "-Users-Able-keralora": "/Users/Able/keralora",
-    "-Users-Able-.claude": "/Users/Able/.claude"
+    "-Users-Able-keralora": "~/keralora",
+    "-Users-Able-.claude": "~/.claude"
   },
   "theme": {
     "accent": "#3e6b4f",

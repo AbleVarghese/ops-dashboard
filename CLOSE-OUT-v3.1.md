@@ -27,7 +27,7 @@ Per `verify/V3.1-PLAN.md`'s Stage-4a handoff, in the stated dependency order:
 real `keralora` data captured this genuine event mid-session — a REAL `npm test` invocation by
 THIS agent, correctly classified live:
 ```json
-{"ts":"2026-07-24T15:10:42.774Z","agent":"build-dashboard5","kind":"command_test","tool":"Bash","summary":"Bash: cd /Users/Able/.claude/lib/ops-dashboard && npm test 2>&1 | tail -5","redFlag":false}
+{"ts":"2026-07-24T15:10:42.774Z","agent":"build-dashboard5","kind":"command_test","tool":"Bash","summary":"Bash: cd ~/.claude/lib/ops-dashboard && npm test 2>&1 | tail -5","redFlag":false}
 ```
 And a real control request POSTed to `/api/control/-Users-Able-keralora` appeared in the SAME
 SSE stream as a first-class `"kind":"control"` event within the same request/response cycle —

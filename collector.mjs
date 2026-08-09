@@ -17,11 +17,11 @@
 //
 // Usage:
 //   node collector.mjs --hub https://dash.example.com --token SECRET \
-//     --project keralora:/Users/Able/keralora --project dotclaude:/Users/Able/.claude
+//     --project keralora:~/keralora --project dotclaude:~/.claude
 //   node collector.mjs --config collector.config.json
 //
 // Config file (JSON): { "hub": "...", "token": "...", "collectorId": "optional-stable-id",
-//   "projects": [{ "name": "keralora", "repoPath": "/Users/Able/keralora" }],
+//   "projects": [{ "name": "keralora", "repoPath": "~/keralora" }],
 //   "snapshotIntervalMs": 10000, "heartbeatIntervalMs": 15000, "dataDir": "optional-override" }
 // CLI flags override config-file values where both are given. `--data-dir` (default: a `data/`
 // folder next to this script) is where the collector's identity + durable outbox live — override

@@ -41,7 +41,7 @@ CI runner or a linter is — never a runtime dependency of the shipped dashboard
 ## Running everything
 
 ```bash
-cd /Users/Able/ops-dashboard
+cd ~/ops-dashboard
 npm test                                    # 40 unit/integration tests
 node verify/latency.mjs
 node verify/burst.mjs

@@ -54,7 +54,7 @@ exists to catch — a green test isn't proof by itself if its own timing looks w
 ## Live proof (this session, real processes, real loopback HTTP)
 
 Ran the full flow manually before writing `verify/collector-hub.mjs`, against a REAL live project
-(`/Users/Able/keralora`, this exact working session, watched by a real collector):
+(`~/keralora`, this exact working session, watched by a real collector):
 
 1. **Real snapshot delivery**: the collector picked up **37 real agent transcripts** (this
    session's own subagent fleet) and delivered them to the hub; `GET /api/state` on the hub showed
