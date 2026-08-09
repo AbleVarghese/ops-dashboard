@@ -5,6 +5,10 @@ Zero npm dependencies, no build step, Node ≥22 built-ins only. Watches N proje
 transcripts, `reports/*.md` ledgers, and git state **simultaneously**, and pushes every change to the
 browser over Server-Sent Events (typically <1s from disk write to UI).
 
+> Built by [Able Varghese](https://github.com/AbleVarghese) as part of the agentic engineering system
+> behind a [10-platform portfolio](https://github.com/AbleVarghese). Free and open source (MIT).
+> **If it saves you time, a ⭐ helps other agent-fleet operators find it.**
+
 v3's headline change from v2: there is no longer a single "active" project you switch between —
 every enabled project is watched at once, with a unified project-tagged feed, per-project lanes, a
 plain-English narrative strip summarizing all of them, and live stall detection.
@@ -13,12 +17,10 @@ plain-English narrative strip summarizing all of them, and live stall detection.
 
 ## Repository index
 
-Two related private repos (owner `AbleVarghese`):
-
-| Repo | Purpose | Local path |
-|---|---|---|
-| **[ops-dashboard](https://github.com/AbleVarghese/ops-dashboard)** | This project — a live SDLC / agent-activity monitor for Claude Code repos | `/Users/Able/ops-dashboard` |
-| **[claude-config](https://github.com/AbleVarghese/claude-config)** | Global Claude Code config — rules, hooks, commands, skills, settings (secret-free, default-deny) | `/Users/Able/.claude` |
+| Repo | Purpose |
+|---|---|
+| **[ops-dashboard](https://github.com/AbleVarghese/ops-dashboard)** | This project — a live SDLC / agent-activity monitor for Claude Code repos (open source, MIT) |
+| claude-config | The author's global Claude Code config it grew out of (private) |
 
 Relocated 2026-07-24 from `~/.claude/lib/ops-dashboard` to its own standalone project so the config
 backup stays pure config.
