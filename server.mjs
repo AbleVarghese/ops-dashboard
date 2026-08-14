@@ -23,6 +23,7 @@
 //   POST /api/control/:key           append a control REQUEST for one project (see lib/control.mjs)
 //   POST /ingest                     v3.2 hub mode: collector.mjs posts events/snapshots/heartbeats
 //   GET  /api/collectors             v3.2 hub mode: registered collectors + offline status
+//   GET  /api/git-metrics            v3.3.2: git subprocess governor counters (see lib/git-runner.mjs)
 //   GET  /healthz                    v3.2 unauthenticated liveness probe (Docker HEALTHCHECK target)
 import fs from "node:fs";
 import http from "node:http";
@@ -37,6 +38,8 @@ import { eventKindsPayload } from "./lib/event-kinds.mjs";
 import { createHub } from "./lib/hub.mjs";
 import { buildNarrative } from "./lib/narrative.mjs";
 import { watchMode } from "./lib/watch-compat.mjs";
+import { getGitRunnerCounters, getGitRunnerSettings } from "./lib/git-runner.mjs";
+import { getGitStatusCacheSize } from "./lib/git-status.mjs";
 
 const PUBLIC_DIR = path.join(import.meta.dirname, "public");
 const cliRepoPath = process.argv[2] || null;
@@ -111,11 +114,34 @@ if (cliRepoPath && fs.existsSync(cliRepoPath)) {
 }
 projectManager.reconcile(config);
 
+// v3.3.2 — REFRESH COALESCING (the storm fix's server half; lib/git-runner.mjs's header has the
+// full incident). The 150ms debounce below only guarded the WINDOW BEFORE a push starts: once the
+// timer fired, pushBoardStateNow() ran un-awaited, so the very next feed event could schedule
+// another push 150ms later while the first was still walking four repositories. Under a normal
+// agent-activity burst that stacked N overlapping full-state rebuilds, each fanning out to every
+// project and every branch — the multiplier that turned a handful of git calls into a permanent
+// 20-46 process storm. Now at most ONE rebuild is ever in flight; anything that arrives during it
+// sets a single trailing flag and is served by exactly one follow-up rebuild afterwards, so no
+// event is ever dropped and no event ever adds a parallel scan.
+let boardPushInFlight = false;
+let boardPushRequestedDuringFlight = false;
+
 async function pushBoardStateNow() {
+  if (boardPushInFlight) {
+    boardPushRequestedDuringFlight = true;
+    return;
+  }
+  boardPushInFlight = true;
   try {
     broadcast("state", await buildFullState());
   } catch (err) {
     broadcast("state", { error: String(err && err.message ? err.message : err) });
+  } finally {
+    boardPushInFlight = false;
+    if (boardPushRequestedDuringFlight) {
+      boardPushRequestedDuringFlight = false;
+      pushBoardStateSoon(); // trailing edge — one more rebuild, debounced, never a parallel one
+    }
   }
 }
 
@@ -415,6 +441,14 @@ const server = http.createServer(async (req, res) => {
     // defines (this project's own no-drift/SSOT discipline). Static, not per-request-computed —
     // safe for the client to fetch once at startup rather than on every /api/state poll.
     if (req.method === "GET" && url.pathname === "/api/event-kinds") return sendJson(res, 200, eventKindsPayload());
+
+    // v3.3.2 — git subprocess governor metrics (lib/git-runner.mjs). Pull-only and dirt cheap (a
+    // shallow copy of ~10 integers); this is the observability that was missing when the process
+    // storm went unnoticed. `peakActive` is the one number that matters: it must never exceed
+    // `settings.concurrency`, and if it does, the semaphore is broken and the storm can return.
+    if (req.method === "GET" && url.pathname === "/api/git-metrics") {
+      return sendJson(res, 200, { counters: getGitRunnerCounters(), settings: getGitRunnerSettings(), snapshotCacheEntries: getGitStatusCacheSize() });
+    }
 
     if (req.method === "POST" && parts[0] === "api" && parts[1] === "control" && parts[2]) {
       if (!config.controlContractEnabled) return sendJson(res, 403, { error: "control contract disabled in settings" });

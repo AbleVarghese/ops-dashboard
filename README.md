@@ -486,6 +486,42 @@ recognition — never as a required dependency, never as an outbound network cal
 core function when absent. None exist yet; this tier is a standing design constraint for future
 recognizers, not a current capability.
 
+## Git subprocess governor (v3.3.2)
+
+Every `git` child process the dashboard spawns goes through `lib/git-runner.mjs`, and nowhere else.
+It exists because of a real production incident (2026-08-13): the v3.3.1 latency work converted
+every git call from the synchronous `execFileSync` to the asynchronous `execFile`, which removed an
+**accidental global mutex** — a single-threaded Node process running a *synchronous* subprocess
+cannot have two children alive at once, and cannot start a second board refresh while the first is
+still running. Nothing replaced it, so the fan-out (`Promise.all` over remotes × branches ×
+projects) multiplied against the fan-in (a 150ms debounce, a 5s tick, every SSE connect, every
+`/api/state` request) into **20–46 permanently-live `git status --porcelain=v2` processes**.
+
+Five mechanisms, all always on:
+
+| Mechanism | Guarantee |
+|---|---|
+| Per-repository single-flight | Never two concurrent snapshots of the same repo — later callers share the in-flight promise |
+| Per-command dedup + per-snapshot memo | Identical `git` invocations (same argv, same **canonical** cwd) share one subprocess; a worktree is scanned at most once per snapshot |
+| Global semaphore | At most `concurrency` git children exist at any instant, process-wide |
+| Short-TTL snapshot cache | Consumers in the same moment reuse state; a **degraded** snapshot (timeout / spawn failure) is never cached |
+| Timeout + process-group hard kill | No hung git can hold a concurrency slot forever |
+
+Server-side, `pushBoardStateNow()` is now coalesced: at most one full-state rebuild is ever in
+flight, and anything arriving during one collapses into a single trailing rebuild.
+
+Tunable by environment variable (defaults are the power-efficient production values):
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `OPS_DASH_GIT_CONCURRENCY` | `2` | Max simultaneous git subprocesses, process-wide |
+| `OPS_DASH_GIT_TTL_MS` | `2000` | Snapshot reuse window (`0` disables reuse) |
+| `OPS_DASH_GIT_TIMEOUT_MS` | `20000` | Per-child timeout (conservative — a cold large repo is slow, and killing legitimate work would be worse than the bug) |
+| `OPS_DASH_GIT_BIN` | `git` | Git binary (test seam) |
+
+`GET /api/git-metrics` returns the governor's counters — `peakActive` is the number that matters
+and must never exceed `settings.concurrency`. Benchmark: `node verify/git-storm-bench.mjs`.
+
 ## Tests
 
 ```bash
