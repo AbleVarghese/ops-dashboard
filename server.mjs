@@ -127,6 +127,13 @@ let boardPushInFlight = false;
 let boardPushRequestedDuringFlight = false;
 
 async function pushBoardStateNow() {
+  // NOBODY IS LISTENING -> DO NOT DO THE WORK. broadcast() already no-ops with zero SSE clients,
+  // but that check came AFTER buildFullState() had walked every repository, so an idle dashboard
+  // with no browser open still paid the full cost every 5s forever. Measured on the live
+  // deployment before this line existed: 663 git subprocesses per MINUTE and 28.5% CPU on a
+  // machine nobody was looking at. The state is never stale as a result — /api/state computes on
+  // demand, and /events sends a fresh full snapshot the instant a client connects.
+  if (sseClients.size === 0) return;
   if (boardPushInFlight) {
     boardPushRequestedDuringFlight = true;
     return;

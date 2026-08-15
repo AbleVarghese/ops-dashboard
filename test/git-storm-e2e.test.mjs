@@ -131,3 +131,55 @@ test("40 concurrent /api/state requests + SSE connects never push the live serve
     fs.rmSync(repoPath, { recursive: true, force: true });
   }
 });
+
+test("an IDLE dashboard with no browser connected does essentially NO git work", async () => {
+  // The power-efficiency half of the fix, and the one that only shows up by running the real
+  // server and waiting. Before this, the 5s backstop rebuilt full state forever whether or not
+  // anyone was connected — measured on the live 5-project deployment at 663 git subprocesses per
+  // minute and 28.5% CPU with no browser open. broadcast() no-opped on the result, so every one of
+  // those subprocesses was pure waste.
+  const repoPath = makeRepo();
+  const dir = makeServerDir(repoPath);
+  const proc = spawn("node", ["server.mjs"], { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
+  let log = "";
+  proc.stdout.on("data", (d) => (log += d));
+  proc.stderr.on("data", (d) => (log += d));
+
+  try {
+    assert.equal(await pollHealthz(), true, `server did not come up; log:\n${log}`);
+    await fetch(`http://127.0.0.1:${PORT}/api/state`); // one real read, so the cache is warm
+
+    const before = (await (await fetch(`http://127.0.0.1:${PORT}/api/git-metrics`)).json()).counters.gitSpawns;
+    // Sit idle across at least 3 backstop ticks (refreshMs is 5000 in this fixture).
+    await new Promise((r) => setTimeout(r, 16000));
+    const after = (await (await fetch(`http://127.0.0.1:${PORT}/api/git-metrics`)).json()).counters.gitSpawns;
+
+    assert.equal(
+      after - before,
+      0,
+      `an idle server with no SSE client spawned ${after - before} git processes across 3 refresh ticks`
+    );
+
+    // ...and it must WAKE UP properly: a connecting client still gets a full, real snapshot.
+    const ctrl = new AbortController();
+    const sse = await fetch(`http://127.0.0.1:${PORT}/events`, { signal: ctrl.signal });
+    // The stream opens with a `retry:` directive before any event frame, so read until the state
+    // frame actually arrives rather than assuming it is in the first chunk.
+    const reader = sse.body.getReader();
+    const decoder = new TextDecoder();
+    let text = "";
+    const deadline = Date.now() + 10000;
+    while (!text.includes("event: state") && Date.now() < deadline) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      text += decoder.decode(chunk.value, { stream: true });
+    }
+    assert.match(text, /event: state/, "a connecting client is sent a state frame immediately");
+    assert.match(text, /"branch":"main"/, "and that frame carries real git data, not an empty stub");
+    ctrl.abort();
+  } finally {
+    proc.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(repoPath, { recursive: true, force: true });
+  }
+});
