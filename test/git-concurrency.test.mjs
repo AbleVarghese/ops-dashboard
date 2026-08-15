@@ -20,7 +20,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { getGitStatus, clearGitStatusCache, getGitStatusCacheSize } from "../lib/git-status.mjs";
+import { getGitStatus, clearGitStatusCache, getGitStatusCacheSize, getGitStatusCacheCounters, invalidateGitStatus } from "../lib/git-status.mjs";
 import {
   configureGitRunner,
   getGitRunnerCounters,
@@ -62,9 +62,23 @@ before(() => {
   configureGitRunner(PRODUCTION_DEFAULTS);
 });
 
-beforeEach(() => {
+/** Stale-while-revalidate refreshes are deliberately fire-and-forget, so a previous test can still
+ * have a background scan in flight when the next one starts asserting on PROCESS-WIDE gauges
+ * (`active`, `peakActive`). That is correct production behaviour and a real hazard for a shared-
+ * state test file, so every test starts from a quiesced runner rather than from hope. */
+async function waitForIdle(timeoutMs = 10000) {
+  const deadline = Date.now() + timeoutMs;
+  while (getGitRunnerCounters().active > 0 && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 20));
+  }
+  assert.equal(getGitRunnerCounters().active, 0, "runner did not go idle between tests");
+}
+
+beforeEach(async () => {
+  await waitForIdle();
   configureGitRunner(PRODUCTION_DEFAULTS);
   delete process.env.OPS_DASH_GIT_TTL_MS;
+  delete process.env.OPS_DASH_GIT_MAX_STALE_MS;
   clearGitStatusCache();
   resetGitRunnerCounters();
   setSpawnObserver(null);
@@ -224,7 +238,7 @@ test("the request immediately after a timeout succeeds — a degraded snapshot i
   assert.equal(healthy.available, true);
 });
 
-// ── 6. SHORT-TTL CACHE ───────────────────────────────────────────────────────────────────────
+// ── 6. SHORT-TTL CACHE + STALE-WHILE-REVALIDATE ──────────────────────────────────────────────
 test("within the TTL several consumers reuse one snapshot; after it expires the repo is re-scanned", async () => {
   process.env.OPS_DASH_GIT_TTL_MS = "400";
   const dir = makeRepo("ttl");
@@ -240,20 +254,76 @@ test("within the TTL several consumers reuse one snapshot; after it expires the 
   assert.equal(second, first, "and got the identical snapshot object");
 
   await new Promise((r) => setTimeout(r, 500));
-  const third = await getGitStatus(project);
-  assert.equal(rec.all.length > spawnsAfterFirst, true, "after expiry the repo was really re-scanned");
-  assert.notEqual(third, first, "and the caller got a fresh snapshot");
-  assert.equal(third.branch, "main");
+
+  // STALE-WHILE-REVALIDATE: the caller is served the previous snapshot IMMEDIATELY (it must never
+  // block on git once a repo has been scanned once) and a background refresh is kicked off.
+  const stale = await getGitStatus(project);
+  assert.equal(stale, first, "an expired entry is served instantly rather than making the UI wait");
+
+  await new Promise((r) => setTimeout(r, 800)); // let the background refresh land
+  assert.equal(rec.all.length > spawnsAfterFirst, true, "the background refresh really re-scanned");
+  const fresh = await getGitStatus(project);
+  assert.notEqual(fresh, first, "and the next caller gets the newly-built snapshot");
+  assert.equal(fresh.branch, "main");
+});
+
+test("STALE-WHILE-REVALIDATE bounds git work to ONE scan per TTL no matter how many callers arrive", async () => {
+  // The regression this guards is the one found on the live 5-project deployment: with a plain TTL
+  // shorter than the scan it caches, 40 concurrent callers each paid for a full fresh scan and the
+  // burst took 99 seconds. Here 50 callers arrive continuously across several TTL windows and the
+  // total number of working-tree scans must stay in single digits.
+  process.env.OPS_DASH_GIT_TTL_MS = "100";
+  const dir = makeRepo("swr");
+  const project = { repoPath: dir, gitDirExists: true };
+  await getGitStatus(project); // warm (the only blocking scan a caller ever pays for)
+  const rec = recordSpawns();
+
+  const started = Date.now();
+  for (let i = 0; i < 50; i++) {
+    const r = await getGitStatus(project);
+    assert.equal(r.branch, "main", "every caller got real data, never a placeholder");
+    await new Promise((res) => setTimeout(res, 10));
+  }
+  const elapsed = Date.now() - started;
+
+  const scans = rec.statusOps().length;
+  assert.equal(scans <= 8, true, `50 callers over ~${elapsed}ms triggered ${scans} scans — coalescing regressed`);
+  assert.equal(elapsed < 3000, true, `50 warm callers took ${elapsed}ms — callers are blocking on git again`);
+});
+
+test("EVENT-DRIVEN INVALIDATION: a real commit makes the next read rescan instead of waiting out the TTL", async () => {
+  process.env.OPS_DASH_GIT_TTL_MS = "60000"; // a long TTL, so ONLY invalidation can refresh this
+  const dir = makeRepo("invalidate");
+  const project = { repoPath: dir, gitDirExists: true };
+
+  const before = await getGitStatus(project);
+  const firstCommit = before.lastCommit.hash;
+
+  fs.writeFileSync(path.join(dir, "b.txt"), "two");
+  git(["add", "b.txt"], dir);
+  git(["commit", "-q", "-m", "second"], dir);
+
+  const stillCached = await getGitStatus(project);
+  assert.equal(stillCached.lastCommit.hash, firstCommit, "without invalidation the long TTL holds (control)");
+
+  assert.equal(invalidateGitStatus(dir), true, "invalidation found the entry");
+  await getGitStatus(project); // served stale + triggers the refresh
+  await new Promise((r) => setTimeout(r, 600));
+  const after = await getGitStatus(project);
+  assert.notEqual(after.lastCommit.hash, firstCommit, "the commit reached the board without waiting out the TTL");
+  assert.equal(after.lastCommit.subject, "second");
 });
 
 test("TTL=0 disables reuse entirely (the escape hatch works in the direction that matters)", async () => {
   process.env.OPS_DASH_GIT_TTL_MS = "0";
+  process.env.OPS_DASH_GIT_MAX_STALE_MS = "1"; // no stale-serving either — force a real scan
   const dir = makeRepo("ttlzero");
   const project = { repoPath: dir, gitDirExists: true };
   const rec = recordSpawns();
   await getGitStatus(project);
   const after = rec.all.length;
   await getGitStatus(project);
+  delete process.env.OPS_DASH_GIT_MAX_STALE_MS;
   assert.equal(rec.all.length > after, true, "TTL=0 must re-scan every time");
 });
 

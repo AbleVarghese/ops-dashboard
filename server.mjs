@@ -39,7 +39,7 @@ import { createHub } from "./lib/hub.mjs";
 import { buildNarrative } from "./lib/narrative.mjs";
 import { watchMode } from "./lib/watch-compat.mjs";
 import { getGitRunnerCounters, getGitRunnerSettings } from "./lib/git-runner.mjs";
-import { getGitStatusCacheSize } from "./lib/git-status.mjs";
+import { getGitStatusCacheSize, getGitStatusCacheCounters } from "./lib/git-status.mjs";
 
 const PUBLIC_DIR = path.join(import.meta.dirname, "public");
 const cliRepoPath = process.argv[2] || null;
@@ -447,7 +447,7 @@ const server = http.createServer(async (req, res) => {
     // storm went unnoticed. `peakActive` is the one number that matters: it must never exceed
     // `settings.concurrency`, and if it does, the semaphore is broken and the storm can return.
     if (req.method === "GET" && url.pathname === "/api/git-metrics") {
-      return sendJson(res, 200, { counters: getGitRunnerCounters(), settings: getGitRunnerSettings(), snapshotCacheEntries: getGitStatusCacheSize() });
+      return sendJson(res, 200, { counters: getGitRunnerCounters(), cache: getGitStatusCacheCounters(), settings: getGitRunnerSettings(), snapshotCacheEntries: getGitStatusCacheSize() });
     }
 
     if (req.method === "POST" && parts[0] === "api" && parts[1] === "control" && parts[2]) {

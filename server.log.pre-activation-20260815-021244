@@ -1,0 +1,175 @@
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app
+SIGTERM received — shutting down gracefully
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app
+
+<--- Last few GCs --->
+
+[799:0x7fa943500000] 35044263 ms: Mark-Compact (reduce) 4096.0 (4112.7) -> 4093.9 (4109.7) MB, pooled: 0 MB, 16.41 / 0.00 ms  (+ 4.9 ms in 0 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 37 ms) (average mu = 0.973, cur
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x104a8c9d4 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 2: 0x104c8c0e8 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 3: 0x104eb1b07 v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/usr/local/bin/node]
+ 4: 0x104eafc5f v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/bin/node]
+ 5: 0x104ea2885 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+ 6: 0x104ea3194 v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+ 7: 0x104e762dc v8::internal::FactoryBase<v8::internal::Factory>::NewRawTwoByteString(int, v8::internal::AllocationType) [/usr/local/bin/node]
+ 8: 0x1052245ab v8::internal::String::SlowFlatten(v8::internal::Isolate*, v8::internal::Handle<v8::internal::ConsString>, v8::internal::AllocationType) [/usr/local/bin/node]
+ 9: 0x104ca4d91 v8::String::Utf8Length(v8::Isolate*) const [/usr/local/bin/node]
+10: 0x104a557ad node::Buffer::(anonymous namespace)::SlowByteLengthUtf8(v8::FunctionCallbackInfo<v8::Value> const&) [/usr/local/bin/node]
+11: 0x105792045 Builtins_CallApiCallbackOptimizedNoProfiling [/usr/local/bin/node]
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+
+<--- Last few GCs --->
+
+[15816:0x7fee2c400000] 26358123 ms: Scavenge 4089.2 (4106.5) -> 4087.3 (4106.5) MB, pooled: 0 MB, 0.50 / 0.00 ms  (average mu = 0.994, current mu = 0.989) allocation failure; 
+[15816:0x7fee2c400000] 26358159 ms: Mark-Compact 4098.1 (4115.3) -> 4095.2 (4112.4) MB, pooled: 3 MB, 9.69 / 0.00 ms  (average mu = 0.996, current mu = 0.997) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x106f2d9d4 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 2: 0x10712d0e8 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 3: 0x107352b07 v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/usr/local/bin/node]
+ 4: 0x107350c5f v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/bin/node]
+ 5: 0x107343885 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+ 6: 0x107344194 v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+ 7: 0x1073172dc v8::internal::FactoryBase<v8::internal::Factory>::NewRawTwoByteString(int, v8::internal::AllocationType) [/usr/local/bin/node]
+ 8: 0x107463e0e v8::internal::JsonParser<unsigned short>::MakeString(v8::internal::JsonString const&, v8::internal::Handle<v8::internal::String>) [/usr/local/bin/node]
+ 9: 0x1074660df v8::internal::MaybeHandle<v8::internal::Object> v8::internal::JsonParser<unsigned short>::ParseJsonValue<false>(v8::internal::Handle<v8::internal::Object>) [/usr/local/bin/node]
+10: 0x107463bc8 v8::internal::JsonParser<unsigned short>::ParseJson(v8::internal::Handle<v8::internal::Object>) [/usr/local/bin/node]
+11: 0x107463b04 v8::internal::JsonParser<unsigned short>::Parse(v8::internal::Isolate*, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::Object>) [/usr/local/bin/node]
+12: 0x1071a1fd9 v8::internal::Builtin_JsonParse(int, unsigned long*, v8::internal::Isolate*) [/usr/local/bin/node]
+13: 0x107ccfff6 Builtins_CEntry_Return1_ArgvOnStack_BuiltinExit [/usr/local/bin/node]
+14: 0x10dc1da17 
+15: 0x10dd2d516 
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+xcode-select: note: No developer tools were found, requesting install.
+If developer tools are located at a non-default location on disk, use `sudo xcode-select --switch path/to/Xcode.app` to specify the Xcode that you wish to use for command line developer tools, and cancel the installation dialog.
+See `man xcode-select` for more details.
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+Ops Dashboard v3 — http://127.0.0.1:4650 — watching: keralora, solvemax-app, LawyerServed, Licentric
+SIGTERM received — shutting down gracefully
+shutdown complete

@@ -504,7 +504,8 @@ Five mechanisms, all always on:
 | Per-repository single-flight | Never two concurrent snapshots of the same repo — later callers share the in-flight promise |
 | Per-command dedup + per-snapshot memo | Identical `git` invocations (same argv, same **canonical** cwd) share one subprocess; a worktree is scanned at most once per snapshot |
 | Global semaphore | At most `concurrency` git children exist at any instant, process-wide |
-| Short-TTL snapshot cache | Consumers in the same moment reuse state; a **degraded** snapshot (timeout / spawn failure) is never cached |
+| Stale-while-revalidate snapshot cache | Once a repo has been scanned once, callers **never block on git**: fresh inside the TTL, otherwise served instantly while ONE background refresh runs. A **degraded** snapshot is never treated as fresh; last-known-good keeps serving while retries happen |
+| Event-driven invalidation | `lib/feed-git.mjs` invalidates a repo the moment HEAD or the tag list actually moves, so a commit appears immediately rather than at the end of the TTL. Deliberately **not** on raw `.git` churn — `git status` writes `.git/index`, so that would self-retrigger |
 | Timeout + process-group hard kill | No hung git can hold a concurrency slot forever |
 
 Server-side, `pushBoardStateNow()` is now coalesced: at most one full-state rebuild is ever in
@@ -515,7 +516,8 @@ Tunable by environment variable (defaults are the power-efficient production val
 | Variable | Default | Meaning |
 |---|---|---|
 | `OPS_DASH_GIT_CONCURRENCY` | `2` | Max simultaneous git subprocesses, process-wide |
-| `OPS_DASH_GIT_TTL_MS` | `2000` | Snapshot reuse window (`0` disables reuse) |
+| `OPS_DASH_GIT_TTL_MS` | `5000` | Snapshot freshness window — matches `feed.refreshMs` (`0` disables reuse) |
+| `OPS_DASH_GIT_MAX_STALE_MS` | `60000` | Hard staleness ceiling: past this, callers block for a real answer instead of being served old data |
 | `OPS_DASH_GIT_TIMEOUT_MS` | `20000` | Per-child timeout (conservative — a cold large repo is slow, and killing legitimate work would be worse than the bug) |
 | `OPS_DASH_GIT_BIN` | `git` | Git binary (test seam) |
 
