@@ -89,7 +89,21 @@ const hub = createHub(hubOpts);
  * the common case for a pure-local deployment. v3.3.1 — ASYNC (cascades from
  * project-manager.mjs's buildUnifiedState, itself cascading from git-status.mjs's
  * parallelization — see that file's header for the full why/measurement). */
+// The most recent full snapshot, kept so a CONNECTING CLIENT GETS PIXELS IMMEDIATELY instead of
+// staring at "Loading live state…" while five repositories are walked. Found by rendering the real
+// page in a real browser after the idle-skip landed: with nothing recomputing in the background, a
+// fresh tab paid the whole cold scan (~6s on this deployment) before its first frame. The fix is
+// not to go back to burning CPU while nobody is watching — it is to serve last-known-good at once
+// and let the refresh it triggers push the fresh frame a moment later.
+let lastFullState = null;
+
 async function buildFullState() {
+  const state = await buildFullStateUncached();
+  lastFullState = state;
+  return state;
+}
+
+async function buildFullStateUncached() {
   const local = await projectManager.buildUnifiedState(config);
   const remote = hub.getRemoteProjectsState();
   if (remote.length === 0) return { ...local, watchMode: watchMode() };
@@ -180,6 +194,13 @@ function pushBoardStateSoon() {
     pushBoardStateNow();
   }, BOARD_PUSH_DEBOUNCE_MS);
 }
+
+// One warm-up scan a couple of seconds after boot, so the first browser to connect also gets an
+// instant frame. Deliberately ONE scan, deferred and unref'd — it does not make an idle server
+// busy, it just means the remembered snapshot is never empty.
+setTimeout(() => {
+  buildFullState().catch(() => {});
+}, 2000).unref();
 
 function scheduleBoardPush() {
   setTimeout(() => {
@@ -365,7 +386,9 @@ async function handleSse(req, res) {
   });
   res.write(`retry: 1500\n\n`); // client also does its own backoff reconnect on top of this (see app.js)
   try {
-    res.write(`event: state\ndata: ${JSON.stringify(await buildFullState())}\n\n`);
+    // Instant first paint from the remembered snapshot when we have one; a real build only on the
+    // very first connection after boot. Either way pushBoardStateSoon() below sends a fresh frame.
+    res.write(`event: state\ndata: ${JSON.stringify(lastFullState || (await buildFullState()))}\n\n`);
   } catch (err) {
     res.write(`event: state\ndata: ${JSON.stringify({ error: String(err) })}\n\n`);
   }
@@ -376,6 +399,9 @@ async function handleSse(req, res) {
   const mergedFeed = [...projectManager.getRecentFeed(200), ...hub.getRecentFeed(200)].sort((a, b) => (a.ts || "").localeCompare(b.ts || "")).slice(-200);
   res.write(`event: feed_batch\ndata: ${JSON.stringify(mergedFeed)}\n\n`);
   sseClients.add(res);
+  // Now that a client exists, pushBoardStateSoon() will actually do work (it no-ops with zero
+  // clients) — this is what replaces the possibly-stale frame just sent with a current one.
+  pushBoardStateSoon();
   req.on("close", () => sseClients.delete(res));
 }
 

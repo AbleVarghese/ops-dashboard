@@ -183,3 +183,39 @@ test("an IDLE dashboard with no browser connected does essentially NO git work",
     fs.rmSync(repoPath, { recursive: true, force: true });
   }
 });
+
+test("a connecting browser gets a populated state frame FAST (no 'Loading live state…' stall)", async () => {
+  // Caught by rendering the real page in a real headless browser: after the idle-skip landed, a
+  // fresh tab showed "0 PROJECTS / Loading live state…" because it was waiting on a full cold scan.
+  // Serving the remembered snapshot on connect fixes it. This is the guard on that behaviour.
+  const repoPath = makeRepo();
+  const dir = makeServerDir(repoPath);
+  const proc = spawn("node", ["server.mjs"], { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
+  try {
+    assert.equal(await pollHealthz(), true, "server came up");
+    await new Promise((r) => setTimeout(r, 3000)); // let the boot warm-up land
+
+    const started = Date.now();
+    const ctrl = new AbortController();
+    const sse = await fetch(`http://127.0.0.1:${PORT}/events`, { signal: ctrl.signal });
+    const reader = sse.body.getReader();
+    const decoder = new TextDecoder();
+    let text = "";
+    const deadline = Date.now() + 10000;
+    while (!text.includes("event: state") && Date.now() < deadline) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      text += decoder.decode(chunk.value, { stream: true });
+    }
+    const ttfs = Date.now() - started; // time to first STATE frame
+    ctrl.abort();
+
+    assert.match(text, /event: state/, "a state frame arrived");
+    assert.match(text, /"branch":"main"/, "carrying real git data — not an empty shell the UI renders as '0 PROJECTS'");
+    assert.equal(ttfs < 1500, true, `first state frame took ${ttfs}ms — a connecting browser is stalling again`);
+  } finally {
+    proc.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(repoPath, { recursive: true, force: true });
+  }
+});
