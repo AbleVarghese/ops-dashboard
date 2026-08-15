@@ -191,6 +191,39 @@ test("a repo with multiple worktrees scans each worktree at most ONCE per snapsh
   assert.equal(result.worktrees.length, 4);
 });
 
+// ── 3b. COST MUST NOT SCALE WITH BRANCH COUNT ────────────────────────────────────────────────
+test("a repo with MANY branches costs a bounded number of subprocesses, not 2 per branch", async () => {
+  // The live deployment's real shape: Licentric has 229 local branches, and the work-disposition
+  // matrix was spawning ~2 git processes PER BRANCH (a rev-parse existence check and a rev-list),
+  // i.e. ~471 subprocesses for one refresh of one repo, repeating forever. The existence question
+  // is answered in full by ONE bulk ref listing. This guards that it stays that way — an O(branches)
+  // subprocess count is the difference between a quiet laptop and a hot one, even with the
+  // concurrency bound holding.
+  const dir = makeRepo("manybranches");
+  const bare = fs.mkdtempSync(path.join(os.tmpdir(), "ops-dash-manybare-"));
+  tmpDirs.push(bare);
+  git(["init", "-q", "--bare"], bare);
+  git(["remote", "add", "origin", bare], dir);
+  git(["push", "-q", "origin", "main"], dir);
+  for (let i = 0; i < 120; i++) git(["branch", `feature-${i}`], dir);
+
+  const rec = recordSpawns();
+  const result = await getGitStatus({ repoPath: dir, gitDirExists: true });
+
+  assert.equal(result.matrix.rows.length, 121, "every branch still gets a row — this is not a cap");
+  assert.equal(
+    rec.all.length < 40,
+    true,
+    `121 branches cost ${rec.all.length} git subprocesses — the per-branch round-trip is back`
+  );
+  // ...and the answers are still right: an unpushed branch is amber, main is pushed.
+  const feature = result.matrix.rows.find((r) => r.branch === "feature-7");
+  assert.equal(feature.pushed.status, "amber", "an unpushed branch is still detected");
+  assert.equal(feature.pushed.note, "not on origin");
+  const main = result.matrix.rows.find((r) => r.branch === "main");
+  assert.equal(main.pushed.status, "ok", "a pushed branch is still detected");
+});
+
 // ── 4. CHILD TIMEOUT ─────────────────────────────────────────────────────────────────────────
 test("a hung git is killed by the timeout, the slot is released, and the caller still gets an answer", async () => {
   // A `git` that never returns AND leaks its stdout pipe to a grandchild (`sleep` is NOT exec'd),
