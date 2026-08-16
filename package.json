@@ -1,6 +1,6 @@
 {
   "name": "ops-dashboard",
-  "version": "3.0.0-final",
+  "version": "3.3.2",
   "private": true,
   "description": "Project-agnostic live SDLC/agent-activity dashboard — routing, live action feed, Kanban, tests, git timeline. Node built-ins only, zero dependencies, no build step.",
   "type": "module",
