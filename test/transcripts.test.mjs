@@ -9,7 +9,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { getAgents } from "../lib/transcripts.mjs";
-import { resolveProject, CLAUDE_PROJECTS_ROOT } from "../lib/paths.mjs";
+// claudeProjectDirName is imported rather than re-implemented on purpose (2026-09-09). These two
+// tests used to inline `-${repoDir.split("/").filter(Boolean).join("-")}` to place their fixtures,
+// which is a second copy of the encoding rule — so when the real rule was corrected they placed
+// fixtures at the old path, looked at the new one, and failed. Deriving the key from the function
+// under test means the fixture and the code can never disagree again.
+import { resolveProject, claudeProjectDirName, CLAUDE_PROJECTS_ROOT } from "../lib/paths.mjs";
 
 function makeAgentFile(subagentsDir, id, mtimeOffsetMs, textSuffix) {
   const filePath = path.join(subagentsDir, `agent-a${id}.jsonl`);
@@ -29,7 +34,7 @@ function makeAgentFile(subagentsDir, id, mtimeOffsetMs, textSuffix) {
 
 test("getAgents: a project with more than MAX_AGENT_FILES transcripts is capped, keeping the MOST RECENT ones (not an arbitrary subset)", () => {
   const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), "ops-dash-scale-test-"));
-  const projectKey = `-${repoDir.split("/").filter(Boolean).join("-")}`;
+  const projectKey = claudeProjectDirName(repoDir);
   const claudeProjectDir = path.join(CLAUDE_PROJECTS_ROOT, projectKey);
   const subagentsDir = path.join(claudeProjectDir, "session-scale-test", "subagents");
   fs.mkdirSync(subagentsDir, { recursive: true });
@@ -58,7 +63,7 @@ test("getAgents: a project with more than MAX_AGENT_FILES transcripts is capped,
 
 test("getAgents: a project with FEWER than MAX_AGENT_FILES transcripts is unaffected by the cap (all present)", () => {
   const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), "ops-dash-scale-test2-"));
-  const projectKey = `-${repoDir.split("/").filter(Boolean).join("-")}`;
+  const projectKey = claudeProjectDirName(repoDir);
   const claudeProjectDir = path.join(CLAUDE_PROJECTS_ROOT, projectKey);
   const subagentsDir = path.join(claudeProjectDir, "session-small", "subagents");
   fs.mkdirSync(subagentsDir, { recursive: true });
